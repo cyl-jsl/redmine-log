@@ -41,13 +41,14 @@ export class RedmineClient {
   }
 
   async listCustomFields(): Promise<RedmineCustomField[] | null> {
-    try {
-      const url = new URL('/custom_fields.json', this.baseUrl);
-      const res = await fetch(url.toString(), { headers: this.headers() });
-      if (!res.ok) return null;
-      const data = await res.json() as { custom_fields: RedmineCustomField[] };
-      return data.custom_fields;
-    } catch { return null; }
+    const url = new URL('/custom_fields.json', this.baseUrl);
+    const res = await fetch(url.toString(), { headers: this.headers() });
+    if (!res.ok) {
+      if (res.status === 403) return null;
+      throw new Error(`Redmine API error: ${res.status} ${await res.text()}`);
+    }
+    const data = await res.json() as { custom_fields: RedmineCustomField[] };
+    return data.custom_fields;
   }
 
   async listIssues(projectId: string | number, query?: string): Promise<RedmineIssue[]> {

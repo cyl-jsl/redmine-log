@@ -37,6 +37,11 @@ describe('RedmineClient', () => {
     expect(await client.listCustomFields()).toBeNull();
   });
 
+  it('listCustomFields throws on 500', async () => {
+    vi.stubGlobal('fetch', mockFetch({}, 500));
+    await expect(client.listCustomFields()).rejects.toThrow();
+  });
+
   it('createTimeEntry sends correct POST body', async () => {
     const f = mockFetch({ time_entry: { id: 99 } }, 201);
     vi.stubGlobal('fetch', f);
