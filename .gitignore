@@ -4,3 +4,16 @@ dist/
 *.tsbuildinfo
 docs/plans/
 .worktrees/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.*
