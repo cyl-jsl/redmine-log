@@ -1,7 +1,19 @@
 {
   "name": "redmine-log",
   "version": "0.1.0",
+  "description": "Redmine 工時自動化 CLI 工具 — 別名、模糊匹配、批次登打、Claude 整合",
   "type": "module",
+  "license": "MIT",
+  "author": "cyl-jsl",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cyl-jsl/redmine-log.git"
+  },
+  "homepage": "https://github.com/cyl-jsl/redmine-log#readme",
+  "bugs": {
+    "url": "https://github.com/cyl-jsl/redmine-log/issues"
+  },
+  "keywords": ["redmine", "time-tracking", "cli", "timesheet"],
   "bin": { "redmine-log": "./dist/index.js" },
   "scripts": {
     "build": "tsc",
@@ -10,7 +22,7 @@
     "test:watch": "vitest"
   },
   "engines": { "node": ">=22.0.0" },
-  "files": ["dist"],
+  "files": ["dist", "LICENSE", "README.md"],
   "dependencies": {
     "commander": "^13.1.0",
     "chalk": "^5.4.1",
