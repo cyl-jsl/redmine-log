@@ -3,3 +3,4 @@ dist/
 .mcp.json
 *.tsbuildinfo
 docs/plans/
+.worktrees/
