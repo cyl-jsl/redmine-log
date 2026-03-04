@@ -265,6 +265,10 @@ sudo sh -c 'echo "<內網IP> redminesrv.example.com" >> /etc/hosts'
 | `Cannot access custom fields` | 非管理員帳號 | init 時手動輸入歸屬部門的自訂欄位 ID |
 | `Project not found` | 專案名稱不符或快取過期 | 執行 `redmine-log sync` 更新快取 |
 
+## Contributing
+
+歡迎貢獻！請參閱 [CONTRIBUTING.md](CONTRIBUTING.md) 了解開發流程與程式碼規範。
+
 ## License
 
 MIT

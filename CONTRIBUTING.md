@@ -19,9 +19,12 @@ npm test
 1. Fork 或建立 feature branch：`git checkout -b feat/my-feature`
 2. 撰寫測試（我們使用 vitest）
 3. 實作功能
-4. 確認測試通過：`npm test`
-5. 確認 build 成功：`npm run build`
-6. 提交 PR
+4. 開發時即時測試 CLI：`npm run dev -- add 1h MyProject 開發`
+5. 確認測試通過：`npm test`
+6. 確認 build 成功：`npm run build`
+7. 提交 PR
+
+> **提示：** `npm run dev` 使用 tsx 直接執行 TypeScript，不需要先 build。在 `--` 之後接上任何 CLI 子指令即可測試。
 
 ## 程式碼風格
 
