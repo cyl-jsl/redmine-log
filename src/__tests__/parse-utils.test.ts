@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parseHours, parseDate } from '../lib/parse-utils.js';
+import { parseHours, parseDate, localDateStr } from '../lib/parse-utils.js';
 
 describe('parseHours', () => {
   it('parses "4h" as 4', () => expect(parseHours('4h')).toBe(4));
@@ -12,15 +12,15 @@ describe('parseHours', () => {
 });
 
 describe('parseDate', () => {
-  it('undefined → today', () => {
-    expect(parseDate(undefined)).toBe(new Date().toISOString().slice(0, 10));
+  it('undefined → today (local time)', () => {
+    expect(parseDate(undefined)).toBe(localDateStr(new Date()));
   });
-  it('"today" → today', () => {
-    expect(parseDate('today')).toBe(new Date().toISOString().slice(0, 10));
+  it('"today" → today (local time)', () => {
+    expect(parseDate('today')).toBe(localDateStr(new Date()));
   });
-  it('"yesterday" → yesterday', () => {
+  it('"yesterday" → yesterday (local time)', () => {
     const d = new Date(); d.setDate(d.getDate() - 1);
-    expect(parseDate('yesterday')).toBe(d.toISOString().slice(0, 10));
+    expect(parseDate('yesterday')).toBe(localDateStr(d));
   });
   it('YYYY-MM-DD passthrough', () => {
     expect(parseDate('2026-03-04')).toBe('2026-03-04');

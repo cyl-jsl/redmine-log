@@ -1,3 +1,10 @@
+export function localDateStr(d: Date): string {
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  return `${yyyy}-${mm}-${dd}`;
+}
+
 export function parseHours(input: string): number {
   let hours: number;
   if (input.endsWith('m')) {
@@ -10,10 +17,10 @@ export function parseHours(input: string): number {
 }
 
 export function parseDate(input?: string): string {
-  if (!input || input === 'today') return new Date().toISOString().slice(0, 10);
+  if (!input || input === 'today') return localDateStr(new Date());
   if (input === 'yesterday') {
     const d = new Date(); d.setDate(d.getDate() - 1);
-    return d.toISOString().slice(0, 10);
+    return localDateStr(d);
   }
   if (/^\d{4}-\d{2}-\d{2}$/.test(input)) return input;
   // MM/DD format → current year
