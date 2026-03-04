@@ -22,6 +22,10 @@ export function loadConfig(): RedmineConfig | null {
 
 export function saveConfig(config: RedmineConfig): void {
   const dir = getConfigDir();
-  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-  fs.writeFileSync(path.join(dir, CONFIG_FILE), JSON.stringify(config, null, 2), 'utf-8');
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true, mode: 0o700 });
+  fs.writeFileSync(
+    path.join(dir, CONFIG_FILE),
+    JSON.stringify(config, null, 2),
+    { encoding: 'utf-8', mode: 0o600 },
+  );
 }
