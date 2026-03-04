@@ -31,4 +31,10 @@ describe('parseDate', () => {
   it('throws on invalid', () => {
     expect(() => parseDate('not-a-date')).toThrow();
   });
+  it('throws on invalid MM/DD like 13/45', () => {
+    expect(() => parseDate('13/45')).toThrow('Invalid date');
+  });
+  it('throws on invalid MM/DD like 02/30', () => {
+    expect(() => parseDate('02/30')).toThrow('Invalid date');
+  });
 });

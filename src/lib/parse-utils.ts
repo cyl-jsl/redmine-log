@@ -26,7 +26,16 @@ export function parseDate(input?: string): string {
   // MM/DD format → current year
   const mmdd = input.match(/^(\d{2})\/(\d{2})$/);
   if (mmdd) {
+    const month = Number(mmdd[1]);
+    const day = Number(mmdd[2]);
+    if (month < 1 || month > 12 || day < 1 || day > 31) {
+      throw new Error(`Invalid date: ${input}. Use YYYY-MM-DD, MM/DD, "today", or "yesterday".`);
+    }
     const year = new Date().getFullYear();
+    const candidate = new Date(year, month - 1, day);
+    if (candidate.getMonth() !== month - 1 || candidate.getDate() !== day) {
+      throw new Error(`Invalid date: ${input}. Use YYYY-MM-DD, MM/DD, "today", or "yesterday".`);
+    }
     return `${year}-${mmdd[1]}-${mmdd[2]}`;
   }
   throw new Error(`Invalid date: ${input}. Use YYYY-MM-DD, MM/DD, "today", or "yesterday".`);
