@@ -13,13 +13,26 @@ Redmine 工時自動化工具 — CLI + Claude MCP/Skill 整合，快速登打 R
 
 ## 安裝
 
-### 從 npm 安裝（推薦）
+### 使用 AI 引導安裝（推薦）
+
+專案內建 `setup-guide` skill，你的 AI Agent 可依據此 skill 自動引導完成安裝、配置與驗證。
+
+Clone 專案後，請 AI Agent 根據 `setup-guide` skill 的指引進行安裝即可：
+
+```bash
+git clone https://github.com/cyl-jsl/redmine-log.git
+cd redmine-log
+
+# 請你的 AI Agent 執行 setup-guide skill
+```
+
+### 從 npm 安裝
 
 ```bash
 npm install -g redmine-log
 ```
 
-### 從原始碼安裝
+### 從原始碼手動安裝
 
 ```bash
 git clone https://github.com/cyl-jsl/redmine-log.git
