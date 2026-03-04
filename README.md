@@ -13,16 +13,19 @@ Redmine 工時自動化工具 — CLI + Claude MCP/Skill 整合，快速登打 R
 
 ## 安裝
 
+### 從 npm 安裝（推薦）
+
 ```bash
-git clone <repo-url>
+npm install -g redmine-log
+```
+
+### 從原始碼安裝
+
+```bash
+git clone https://github.com/cyl-jsl/redmine-log.git
 cd redmine-log
 npm install
 npm run build
-```
-
-全域使用：
-
-```bash
 npm link
 ```
 
