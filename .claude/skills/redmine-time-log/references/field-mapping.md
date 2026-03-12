@@ -14,7 +14,7 @@
 
 ## 活動類型 (Activities)
 
-常見活動類型（實際清單依 Redmine 設定而異，可透過 `redmine-log sync` 或 MCP `list_time_entry_activities` 取得）：
+常見活動類型（實際清單依 Redmine 設定而異，可透過 `redmine-log sync` 或 MCP `list_activities` 取得）：
 
 | 名稱 | 說明 |
 |------|------|

@@ -1,63 +1,71 @@
 ---
 name: redmine-time-log
-description: 登打 Redmine 工時。觸發於使用者提及登打工時、記錄工時、log time 等關鍵字。
+description: Use when the user mentions 工時、登時數、time entry、redmine、或任何關於 Redmine 工時登打與查詢的需求
 ---
 
-# Redmine 工時登打 Skill
+# Redmine 工時登打
 
-## 觸發條件
+透過 redmine-log MCP tools 操作 Redmine 工時。tools 支援別名與模糊匹配，但你需要先了解使用者的別名設定才能正確轉換參數。
 
-使用者提及以下關鍵字時觸發：
-- 登打工時、記錄工時、填工時、報工時
-- log time、add time entry、track hours
+## Workflow
 
-## 流程
+```dot
+digraph redmine_flow {
+    rankdir=TB;
+    start [label="使用者提到工時" shape=doublecircle];
+    know_aliases [label="本次 session\n已查過別名？" shape=diamond];
+    get_aliases [label="list_aliases\n了解使用者設定" shape=box];
+    intent [label="意圖？" shape=diamond];
+    log [label="log_time\n登打工時" shape=box];
+    view [label="view_time_entries\n查看紀錄" shape=box];
+    explore [label="list_projects +\nlist_activities +\nlist_aliases" shape=box];
+    confirm [label="view_time_entries\n確認登打結果" shape=box];
+    done [label="回報結果" shape=doublecircle];
 
-### 1. 解析使用者輸入
-
-從自然語言中擷取以下欄位（參考 `references/field-mapping.md`）：
-
-| 欄位 | 必填 | 範例 |
-|------|------|------|
-| 專案 (project) | 是 | "ABC 專案"、專案代碼 |
-| 時數 (hours) | 是 | "4h"、"30m"、"1.5" |
-| 活動類型 (activity) | 是 | "開發"、"會議" |
-| 日期 (date) | 否（預設 today） | "今天"、"昨天"、"03/04" |
-| Issue 編號 | 否 | "#1234" |
-| 部門 (dept) | 否 | 歸屬部門名稱 |
-| 備註 (comment) | 否 | 工作內容說明 |
-
-### 2. 補問缺失必填欄位
-
-若缺少必填欄位，向使用者詢問。一次補問所有缺失欄位。
-
-### 3. 確認並送出
-
-整理所有欄位，向使用者確認後，透過 MCP `redmine` server 呼叫 Redmine API 建立工時記錄：
-
-```
-使用 mcp redmine 的 create_time_entry 工具：
-- project_id: 專案 ID（需先查詢）
-- issue_id: Issue 編號（選填）
-- spent_on: 日期 (YYYY-MM-DD)
-- hours: 時數（小數）
-- activity_id: 活動類型 ID（需先查詢）
-- comments: 備註
-- custom_fields: [{ id: <deptFieldId>, value: "部門名稱" }]（選填）
+    start -> know_aliases;
+    know_aliases -> get_aliases [label="否"];
+    know_aliases -> intent [label="是"];
+    get_aliases -> intent;
+    intent -> log [label="登打"];
+    intent -> view [label="查看"];
+    intent -> explore [label="不確定選項"];
+    log -> confirm;
+    confirm -> done;
+    view -> done;
+    explore -> done;
+}
 ```
 
-### 4. 查詢輔助
+**登打後一定要確認：** 每次 `log_time` 完成後，必須呼叫 `view_time_entries` 讓使用者看到登打結果。這是不可省略的步驟。確認時的 period 要對應登打日期：今天用 `"today"`，其他日期用 `"YYYY-MM-DD:YYYY-MM-DD"` 格式。
 
-若使用者不確定專案名稱或活動類型，可透過 MCP 查詢：
-- `list_projects` — 列出可用專案
-- `list_time_entry_activities` — 列出活動類型
+## 參數轉換
 
-## 批次登打
+自然語言 → MCP tool 參數：
 
-若使用者提供多筆工時，逐筆建立，每筆確認後送出。
+| 使用者說的 | 參數 | 值 |
+|-----------|------|-----|
+| 「4 小時」「4h」 | hours | "4h" |
+| 「30 分鐘」「半小時」 | hours | "30m" |
+| 「開發」「設計」「會議」 | activity | 直接傳入，MCP 會模糊匹配 |
+| 「前端專案」「XX 專案」 | project | 直接傳入別名或名稱 |
+| 「昨天」 | date | "yesterday" |
+| 「3/15」 | date | "03/15" |
+| 「這禮拜」「本週」 | period | "week"（不是 "this_week"） |
+| 「今天」（或省略） | period/date | "today"（預設值） |
 
-## 注意事項
+**period 只接受三種值：** `"today"`、`"week"`、`"YYYY-MM-DD:YYYY-MM-DD"`。不要用 `"this_week"`、`"yesterday"` 等變體。查昨天請用日期範圍格式。
 
-- 日期格式參考 field-mapping.md
-- 時數支援 `4h`、`30m`、`1.5` 格式，統一轉為小數小時
-- 專案和活動類型支援模糊匹配
+## 多筆登打
+
+使用者一次提到多筆工時時：
+1. 逐筆呼叫 `log_time`（每筆獨立，不要合併）
+2. **每筆的 comment 獨立對應，不要混用。** 例如「備註寫 sprint review + 新功能實作」→ 第一筆 comment="sprint review"，第二筆 comment="新功能實作"
+3. 全部完成後呼叫一次 `view_time_entries` 確認所有結果
+
+## Common Mistakes
+
+- **忘了查別名：** 第一次處理工時請求前，一定先 `list_aliases`。別名可能把「前端」映射到完全不同的專案名
+- **登完不確認：** 每次 `log_time` 後都要 `view_time_entries` 讓使用者看到結果
+- **多筆共用 comment：** 使用者說「備註 A + B」時，A 和 B 通常分屬不同筆，別全塞到同一個 comment
+- **period 格式錯誤：** 用了 `"this_week"` 而非 `"week"`，或用了不支援的格式
+- **日期用絕對值：** 使用者說「昨天」時，直接傳 `"yesterday"` 給 date 參數，不需要自己算日期

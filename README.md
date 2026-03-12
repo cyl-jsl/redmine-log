@@ -8,38 +8,30 @@ Redmine 工時自動化工具 — CLI + Claude MCP/Skill 整合，快速登打 R
 - **別名 + 模糊匹配** — 縮寫即可辨識專案與活動類型
 - **批次匯入** — CSV 檔案一次登打多筆
 - **查看工時** — 檢視今日、本週或指定範圍的工時
-- **Claude 整合** — 透過 MCP Server + Skill 以自然語言登打工時
+- **Claude 整合** — 內建 MCP Server + Skill，自然語言登打工時
 - **本地快取** — 24 小時 TTL，減少 API 呼叫
 
 ## 安裝
 
 ### 使用 AI 引導安裝（推薦）
 
-專案內建 `setup-guide` skill，你的 AI Agent 可依據此 skill 自動引導完成安裝、配置與驗證。
-
-Clone 專案後，請 AI Agent 根據 `setup-guide` skill 的指引進行安裝即可：
+專案內建 `setup-guide` skill，你的 AI Agent 可自動引導完成安裝、配置與驗證。
 
 ```bash
 git clone https://github.com/cyl-jsl/redmine-log.git
 cd redmine-log
 
-# 請你的 AI Agent 執行 setup-guide skill
+# 請你的 AI Agent 根據 setup-guide skill 的指引進行安裝
 ```
 
-### 從 npm 安裝
-
-```bash
-npm install -g redmine-log
-```
-
-### 從原始碼手動安裝
+### 從原始碼安裝
 
 ```bash
 git clone https://github.com/cyl-jsl/redmine-log.git
 cd redmine-log
 npm install
 npm run build
-npm link
+npm link       # 註冊全域指令 redmine-log 和 redmine-log-mcp
 ```
 
 ## 快速開始
@@ -171,24 +163,77 @@ redmine-log add 4h fe dev    # = 4h FrontEnd 開發
 
 ## Claude 整合
 
+專案內建 MCP Server 和 Claude Skill，讓你在 Claude Code 中以自然語言操作 Redmine 工時。
+
 ### MCP Server
 
-專案內建 `.mcp.json`，配置 `@yonaka15/mcp-server-redmine`，讓 Claude 可直接操作 Redmine API。
+專案自帶 MCP Server（`src/mcp/server.ts`），提供 5 個 tools：
 
-需設定環境變數：
+| Tool | 功能 |
+|------|------|
+| `log_time` | 登打工時（支援別名與模糊匹配） |
+| `view_time_entries` | 查看工時紀錄 |
+| `list_projects` | 列出可用專案 |
+| `list_activities` | 列出活動類型 |
+| `list_aliases` | 列出別名對照表 |
+
+MCP Server 讀取 `~/.config/redmine-log/config.json`（與 CLI 共用配置），完成 `redmine-log init` 後即可使用，無需額外設定環境變數。
+
+#### 在 Claude Code 中啟用
+
+**方法一：在專案目錄中工作（推薦）**
+
+專案已包含 `.mcp.json`，Claude Code 進入專案目錄時會自動載入 MCP Server。首次使用前需更新路徑：
 
 ```bash
-export REDMINE_URL=https://redmine.example.com
-export REDMINE_API_KEY=your-api-key
+# 在專案目錄下執行，將 .mcp.json 中的路徑更新為你的實際路徑
+cd redmine-log
+cat > .mcp.json << EOF
+{
+  "mcpServers": {
+    "redmine-log": {
+      "command": "node",
+      "args": ["$(pwd)/dist/mcp/server.js"]
+    }
+  }
+}
+EOF
 ```
+
+**方法二：全域設定**
+
+在 `~/.claude/settings.json` 中加入 MCP Server，讓任何目錄都能使用：
+
+```json
+{
+  "mcpServers": {
+    "redmine-log": {
+      "command": "redmine-log-mcp"
+    }
+  }
+}
+```
+
+> 需先執行 `npm link` 註冊 `redmine-log-mcp` 全域指令。
 
 ### Skill：自然語言登打
 
-在 Claude Code 中直接用自然語言描述工時：
+專案在 `.claude/skills/` 中包含 `redmine-time-log` skill，Claude Code 在專案目錄中會自動載入。
 
-> 「幫我登打今天 MyProject #1234 開發 4 小時，備註實作登入功能」
+如需在任何目錄都能使用，將 skill 複製到全域位置：
 
-Skill 會自動解析、補問缺失欄位、確認後送出。
+```bash
+mkdir -p ~/.claude/skills/redmine-log
+cp .claude/skills/redmine-time-log/SKILL.md ~/.claude/skills/redmine-log/SKILL.md
+```
+
+設定完成後，在 Claude Code 中直接用自然語言：
+
+> 「幫我登 4 小時開發到前端專案」
+> 「看一下這禮拜的工時」
+> 「補登昨天 2 小時會議到 ABC 專案，備註 sprint review」
+
+Skill 會引導 AI 正確使用 MCP tools：先查別名 → 執行登打 → 確認結果。
 
 ## 開發
 
@@ -218,13 +263,16 @@ src/
 │   ├── view.ts           # 查看工時
 │   ├── sync.ts           # 同步快取
 │   └── alias.ts          # 別名管理
+├── mcp/
+│   └── server.ts         # MCP Server（5 個 tools）
 └── __tests__/            # 測試檔案
 ```
 
 ### 技術棧
 
-- Node.js v23, TypeScript ESM (strict mode)
+- Node.js >= 22, TypeScript ESM (strict mode)
 - commander (CLI)、chalk (終端著色)、fastest-levenshtein (模糊匹配)
+- @modelcontextprotocol/sdk (MCP Server)
 - vitest (測試)
 - 所有 API 呼叫使用 Node.js 內建 `fetch`
 
