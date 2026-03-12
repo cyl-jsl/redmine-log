@@ -1,5 +1,5 @@
 ---
-name: redmine-time-log
+name: redmine-log
 description: Use when the user mentions 工時、登時數、time entry、redmine、或任何關於 Redmine 工時登打與查詢的需求
 ---
 

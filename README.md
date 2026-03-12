@@ -179,53 +179,31 @@ redmine-log add 4h fe dev    # = 4h FrontEnd 開發
 
 MCP Server 讀取 `~/.config/redmine-log/config.json`（與 CLI 共用配置），完成 `redmine-log init` 後即可使用，無需額外設定環境變數。
 
-#### 在 Claude Code 中啟用
-
-**方法一：在專案目錄中工作（推薦）**
-
-專案已包含 `.mcp.json`，Claude Code 進入專案目錄時會自動載入 MCP Server。首次使用前需更新路徑：
+#### MCP Server 啟用（全域）
 
 ```bash
-# 在專案目錄下執行，將 .mcp.json 中的路徑更新為你的實際路徑
-cd redmine-log
-cat > .mcp.json << EOF
-{
-  "mcpServers": {
-    "redmine-log": {
-      "command": "node",
-      "args": ["$(pwd)/dist/mcp/server.js"]
-    }
-  }
-}
-EOF
-```
-
-**方法二：全域設定**
-
-在 `~/.claude/settings.json` 中加入 MCP Server，讓任何目錄都能使用：
-
-```json
-{
-  "mcpServers": {
-    "redmine-log": {
-      "command": "redmine-log-mcp"
-    }
-  }
-}
+claude mcp add redmine-log -s user -- redmine-log-mcp
 ```
 
 > 需先執行 `npm link` 註冊 `redmine-log-mcp` 全域指令。
 
-### Skill：自然語言登打
+#### Skill 安裝（全域 symlink）
 
-專案在 `.claude/skills/` 中包含 `redmine-time-log` skill，Claude Code 在專案目錄中會自動載入。
-
-如需在任何目錄都能使用，將 skill 複製到全域位置：
+在 redmine-log 專案目錄中執行：
 
 ```bash
-mkdir -p ~/.claude/skills/redmine-log
-cp .claude/skills/redmine-time-log/SKILL.md ~/.claude/skills/redmine-log/SKILL.md
+ln -sf "$(pwd)/.claude/skills/redmine-log" ~/.claude/skills/redmine-log
 ```
+
+> 使用 symlink 確保全域 Skill 始終與專案同步。
+
+> **開發者備註：** 專案內的 `.mcp.json` 僅供開發時使用，一般使用者請用上述全域指令。
+
+#### 驗證
+
+在 Claude Code 中輸入：「幫我看今天的工時」— 若 MCP 正常，會呼叫 `view_time_entries` 並回傳結果。
+
+#### 使用方式
 
 設定完成後，在 Claude Code 中直接用自然語言：
 

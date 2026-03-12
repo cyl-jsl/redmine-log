@@ -63,13 +63,18 @@ npm install
 
 ```bash
 npm run build    # TypeScript 編譯至 dist/
-npm link         # 註冊全域指令 redmine-log
+npm link         # 註冊全域指令 redmine-log 和 redmine-log-mcp
 ```
+
+`npm link` 會同時註冊兩個全域指令：
+- `redmine-log` — CLI 工具
+- `redmine-log-mcp` — MCP Server（供 Claude Code 使用）
 
 驗證：
 
 ```bash
-redmine-log --version   # 應顯示 0.1.0
+redmine-log --version      # 應顯示 0.1.0
+which redmine-log-mcp      # 應顯示路徑，確認 MCP 指令已註冊
 ```
 
 ## Step 4: Initialize
@@ -138,27 +143,32 @@ redmine-log add 4h fe dev -c "實作功能"
 redmine-log alias list
 ```
 
-## Step 7: Claude MCP 整合（選配）
+## Step 7: Claude Code 整合（MCP + Skill）
 
-讓 Claude 透過自然語言登打工時。
+讓 Claude 在任何目錄都能透過自然語言登打工時。
 
-### 設定環境變數
-
-在 `~/.zshrc` 或 `~/.bashrc` 加入：
+### MCP Server（全域）
 
 ```bash
-export REDMINE_URL="https://redmine.example.com"
-export REDMINE_API_KEY="your-api-key"
+claude mcp add redmine-log -s user -- redmine-log-mcp
 ```
 
-重新載入：`source ~/.zshrc`
+> 需先完成 Step 3 的 `npm link`，確保 `redmine-log-mcp` 指令已註冊。
 
-### 使用方式
+### Skill 安裝（全域 symlink）
 
-專案已包含 `.mcp.json`，Claude Code 自動偵測 MCP Server。在 Claude Code 中可直接：
+```bash
+ln -sf "$(pwd)/.claude/skills/redmine-log" ~/.claude/skills/redmine-log
+```
 
-- 使用 `/log-time` 斜槓命令快速登打
-- 用自然語言說「幫我登 4 小時到 FrontEnd 專案，活動是開發」
+> 使用 symlink 確保全域 Skill 始終與專案同步，不需手動更新。
+
+### 驗證
+
+1. **MCP：** 在 Claude Code 中請 AI 呼叫 `list_activities`，確認 MCP Server 正常回應
+2. **Skill：** 說「幫我看這禮拜的工時」，確認 AI 能正確呼叫 `view_time_entries` 並回傳結果
+
+> **開發者備註：** 專案內的 `.mcp.json` 僅供開發時使用。一般使用者請依上述全域指令安裝。
 
 ## CLI 指令速查
 
